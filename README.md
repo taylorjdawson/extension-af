@@ -8,6 +8,22 @@ This project removes those partisan banners from government websites in your own
 
 Note: Some sample markup from affected sites (for testing and selector work) is included in `gov-site-elements/` (e.g., `cdc.gov-banner.html`, `fs.usda.gov-banner.html`, `home.treasury.gov-banner.html`, `hud.gov-alert.html`, `hud.gov-modal.html`, `state.gov-banner.html`).
 
+### Why this matters: Hatch Act context
+
+The Hatch Act (1939) restricts partisan political activity by federal employees and the use of official authority and government resources for partisan ends. Ethics guidance explains employees may not engage in partisan political activity while on duty or using official position/resources; “political activity” means activity directed at the success or failure of a political party, candidate for partisan office, or partisan group. See, for example, federal ethics reminders and summaries of the Act’s scope: [DOI Ethics](https://www.doi.gov/ethics/prohibited-partisan-political-activity-reminder-required-hatch-act?utm_source=openai) and additional analyses referenced in reporting below.
+
+Why the banners are problematic:
+
+- **Partisan messaging in official communications**: Banners on official `.gov` pages that blame a named political party for a shutdown are directed at the success or failure of that party, which fits the definition of partisan political activity in official channels.
+- **Use of official authority/resources**: Publishing such messages on government websites risks using official authority or resources for partisan purposes, which the Act prohibits.
+- **Recent scrutiny**: During the October 2025 shutdown, multiple agencies posted blame language; ethics and legal experts flagged potential Hatch Act concerns. Reporting: [AP explainer](https://apnews.com/article/fe1266f760f0032cb26d8086c691c76e?utm_source=openai), [AP report](https://apnews.com/article/ff5dab4e9a3a74af0c94fd9b184d9311?utm_source=openai).
+
+How this extension helps:
+
+- **Client-side removal only**: It removes known partisan banner elements locally in your browser to keep taxpayer-funded sites neutral while you browse.
+- **No server changes or data collection**: It does not alter `.gov` servers or records and sends no data anywhere.
+- **Not legal advice**: It does not determine legal violations; it simply mitigates exposure to potentially noncompliant partisan messaging pending agency corrections.
+
 ### What it does
 
 - **Automatic removal**: Detects and removes known partisan banners on targeted government websites.
