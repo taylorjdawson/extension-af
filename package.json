@@ -1,6 +1,6 @@
 {
   "name": "extension-af",
-  "description": "manifest.json description",
+  "description": "Browser extension that removes partisan shutdown banners from government (.gov) websites and provides a simple on/off toggle.",
   "private": true,
   "version": "0.0.1",
   "type": "module",
