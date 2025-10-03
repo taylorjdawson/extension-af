@@ -48,11 +48,17 @@ jobs:
         shell: bash
         run: |
           mkdir -p release-ready
-          if [ -d dist/chrome ]; then
-            (cd dist/chrome && zip -r ../../release-ready/gov-shutdown-ext-chromium-${VERSION}.zip .)
+          CHROME_DIR=".output/chrome-mv3"
+          FIREFOX_DIR=".output/firefox-mv2"
+          if [ -d "$CHROME_DIR" ]; then
+            (cd "$CHROME_DIR" && zip -r ../../release-ready/extension-af-chromium-${VERSION}.zip .)
+          else
+            echo "Expected Chrome build dir not found: $CHROME_DIR" >&2
           fi
-          if [ -d dist/firefox ]; then
-            (cd dist/firefox && zip -r ../../release-ready/gov-shutdown-ext-firefox-${VERSION}.zip .)
+          if [ -d "$FIREFOX_DIR" ]; then
+            (cd "$FIREFOX_DIR" && zip -r ../../release-ready/extension-af-firefox-${VERSION}.zip .)
+          else
+            echo "Expected Firefox build dir not found: $FIREFOX_DIR" >&2
           fi
           ls -lah release-ready
 
