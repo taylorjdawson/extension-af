@@ -24,9 +24,7 @@ export default defineBackground(() => {
   }
 
   // Initialize storage with default enabled state
-  browser.storage.local.get({ enabled: true }).then(({ enabled }) => {
-    console.log('[gov-shutdown-ext] Background initialized, enabled:', enabled);
-  });
+  browser.storage.local.get({ enabled: true }).then(({ enabled }) => {});
 
   // Handle messages from content scripts and popup
   browser.runtime.onMessage.addListener((message: Message, sender) => {
@@ -36,10 +34,6 @@ export default defineBackground(() => {
           lastRemovedByTab.set(sender.tab.id, true);
           // Persist to session storage to survive worker restarts
           setRemovedFlag(sender.tab.id, true);
-          console.log(
-            '[gov-shutdown-ext] Banner removed in tab',
-            sender.tab.id
-          );
         }
         break;
 
@@ -53,26 +47,17 @@ export default defineBackground(() => {
           ]);
 
           const activeTabId = message.tabId ?? tabs[0]?.id ?? -1;
-          console.log(
-            '[gov-shutdown-ext][bg] GET_STATE resolved tabId:',
-            activeTabId
-          );
           const removedForTab =
             activeTabId !== -1
               ? (await getRemovedFlag(activeTabId)) ||
                 lastRemovedByTab.get(activeTabId) ||
                 false
               : false;
-          console.log(
-            '[gov-shutdown-ext][bg] GET_STATE removedForTab:',
-            removedForTab
-          );
 
           const response: StateResponse = {
             enabled,
             removedForTab,
           };
-          console.log('[gov-shutdown-ext][bg] GET_STATE response:', response);
           return response;
         })();
 
@@ -95,10 +80,6 @@ export default defineBackground(() => {
                 }
               });
             });
-            console.log(
-              '[gov-shutdown-ext] Enabled state changed to:',
-              message.enabled
-            );
           });
     }
   });

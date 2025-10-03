@@ -6,9 +6,9 @@ export default defineContentScript({
   main(ctx) {
     // Primary selectors for Treasury banner removal
     const selectors = [
-      '#block-hamilton-lapsealertbannerblock',  // Specific ID from sample
-      '.usa-alert:has(a[href*="lapse-in-appropriations"])',  // Alert containing lapse link
-      '.usa-alert:has(p:contains("shutdown"))'  // Fallback for shutdown text
+      '#block-hamilton-lapsealertbannerblock', // Specific ID from sample
+      '.usa-alert:has(a[href*="lapse-in-appropriations"])', // Alert containing lapse link
+      '.usa-alert:has(p:contains("shutdown"))', // Fallback for shutdown text
     ];
 
     let isEnabled = true;
@@ -31,7 +31,7 @@ export default defineContentScript({
         try {
           // Note: :has() selector requires modern browser support
           const elements = document.querySelectorAll(selector);
-          elements.forEach(el => {
+          elements.forEach((el) => {
             el.remove();
             removed = true;
           });
@@ -39,9 +39,11 @@ export default defineContentScript({
           // Fallback for browsers without :has() support
           if (selector.includes(':has')) {
             const fallbackElements = document.querySelectorAll('.usa-alert');
-            fallbackElements.forEach(el => {
-              if (el.querySelector('a[href*="lapse-in-appropriations"]') ||
-                  el.textContent?.toLowerCase().includes('shutdown')) {
+            fallbackElements.forEach((el) => {
+              if (
+                el.querySelector('a[href*="lapse-in-appropriations"]') ||
+                el.textContent?.toLowerCase().includes('shutdown')
+              ) {
                 el.remove();
                 removed = true;
               }
@@ -53,7 +55,6 @@ export default defineContentScript({
       if (removed && !bannerWasRemoved) {
         bannerWasRemoved = true;
         browser.runtime.sendMessage({ type: 'BANNER_REMOVED' } as Message);
-        console.log('[gov-shutdown-ext] Removed Treasury shutdown banner');
       }
     }
 
@@ -74,7 +75,7 @@ export default defineContentScript({
       if (document.body) {
         observer.observe(document.body, {
           childList: true,
-          subtree: true
+          subtree: true,
         });
       }
     }
@@ -101,7 +102,7 @@ export default defineContentScript({
     });
 
     // Initialize
-    checkEnabled().then(enabled => {
+    checkEnabled().then((enabled) => {
       if (enabled) {
         removeBanners();
         startObserver();
@@ -112,5 +113,5 @@ export default defineContentScript({
     ctx.onInvalidated(() => {
       stopObserver();
     });
-  }
+  },
 });

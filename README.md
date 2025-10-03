@@ -1,4 +1,4 @@
-### Government Website Partisan Banner Remover (gov-shutdown-ext)
+### Government Website Partisan Banner Remover (extension-af)
 
 During the October 2025 federal government shutdown, multiple official .gov sites displayed banners blaming a specific political party, using phrasing like “The Radical Left in Congress shut down the government.” Examples were observed on HUD and USDA pages, and other agencies carried similarly partisan messaging. Ethics groups and reporters flagged these as contrary to the nonpartisan norms of government communications and potentially running afoul of the Hatch Act’s limits on partisan activity in official capacity.
 
@@ -75,14 +75,14 @@ If you just want to use the extension without building locally:
 
 - **Chromium (Chrome/Edge)**
 
-  - Download the latest `gov-shutdown-ext-chromium-vX.Y.Z.zip` from the [Releases](https://github.com/taylorjdawson/gov-shutdown-ext/releases) page.
+  - Download the latest `extension-af-chromium-vX.Y.Z.zip` from the [Releases](https://github.com/taylorjdawson/extension-af/releases) page.
   - Unzip it.
   - Open `chrome://extensions` (or `edge://extensions`).
   - Enable Developer mode.
   - Click “Load unpacked” and select the unzipped folder (contains `manifest.json`).
 
 - **Firefox**
-  - Download the latest `gov-shutdown-ext-firefox-vX.Y.Z.zip` from the [Releases](https://github.com/taylorjdawson/gov-shutdown-ext/releases) page.
+  - Download the latest `extension-af-firefox-vX.Y.Z.zip` from the [Releases](https://github.com/taylorjdawson/extension-af/releases) page.
   - Unzip it.
   - Open `about:debugging#/runtime/this-firefox`.
   - Click “Load Temporary Add-on…” and choose the `manifest.json` inside the unzipped folder.
@@ -158,8 +158,8 @@ The repository includes an automated release workflow that builds and attaches r
 
    - Install deps, typecheck, build for Chromium and Firefox
    - Zip `dist/chrome` and `dist/firefox` into:
-     - `gov-shutdown-ext-chromium-vX.Y.Z.zip`
-     - `gov-shutdown-ext-firefox-vX.Y.Z.zip`
+     - `extension-af-chromium-vX.Y.Z.zip`
+     - `extension-af-firefox-vX.Y.Z.zip`
    - Create a GitHub Release for the tag and attach both zips
 
-4. Verify the assets on the [Releases](https://github.com/taylorjdawson/gov-shutdown-ext/releases) page.
+4. Verify the assets on the [Releases](https://github.com/taylorjdawson/extension-af/releases) page.

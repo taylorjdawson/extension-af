@@ -4,14 +4,6 @@ export default defineContentScript({
   main() {
     // Function to scan DOM for target words and replace them
     function scanAndReplaceTargetWords() {
-      // Get all text content from the page (used for logging only)
-      const bodyText = document.body?.textContent || '';
-
-      // Create case-insensitive regex patterns for "President", "Trump", and "POTUS"
-      // Using word boundaries to avoid partial matches
-      const presidentRegex = /\bpresident\b/gi;
-      const trumpRegex = /\btrump\b/gi;
-      const potusRegex = /\bpotus\b/gi;
       // Phrase-first regex: match multi-word combinations before single words to avoid double replacements
       // Matches examples:
       // - "President Trump"
@@ -30,13 +22,7 @@ export default defineContentScript({
         'gi'
       );
 
-      // Find all matches (for logging)
-      const presidentMatches = bodyText.match(presidentRegex) || [];
-      const trumpMatches = bodyText.match(trumpRegex) || [];
-      const potusMatches = bodyText.match(potusRegex) || [];
-
       // Replace occurrences in text nodes
-      let nodesUpdated = 0;
 
       if (document.body) {
         const walker = document.createTreeWalker(
@@ -64,44 +50,11 @@ export default defineContentScript({
               const replaced = original.replace(phraseFirstRegex, 'The Führer');
               if (replaced !== original) {
                 textNode.nodeValue = replaced;
-                nodesUpdated++;
               }
             }
           }
           currentNode = walker.nextNode();
         }
-      }
-
-      // Check if we found any matches or updated any nodes
-      const hasPresident = presidentMatches.length > 0;
-      const hasTrump = trumpMatches.length > 0;
-      const hasPOTUS = potusMatches.length > 0;
-
-      if (hasPresident || hasTrump || hasPOTUS) {
-        console.log(
-          '🔄 Target words detected and replacements applied where found.'
-        );
-
-        if (hasPresident) {
-          console.log(
-            `Found "President": ${presidentMatches.length} occurrence(s)`
-          );
-        }
-        if (hasTrump) {
-          console.log(`Found "Trump": ${trumpMatches.length} occurrence(s)`);
-        }
-        if (hasPOTUS) {
-          console.log(`Found "POTUS": ${potusMatches.length} occurrence(s)`);
-        }
-
-        // Log the page URL for reference
-        console.log('Replaced with:', 'The Führer');
-        console.log('Page URL:', window.location.href);
-        console.log('Text nodes updated:', nodesUpdated);
-
-        // Optional: Log a sample of surrounding text for context (omitted to reduce noise)
-      } else {
-        console.log('No target words found on this page.');
       }
     }
 
