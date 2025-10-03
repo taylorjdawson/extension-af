@@ -1,34 +1,117 @@
-import { useState } from 'react';
-import reactLogo from '@/assets/react.svg';
-import wxtLogo from '/wxt.svg';
+import { useState, useEffect } from 'react';
+import type { StateResponse } from '@/types/messages';
 import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [state, setState] = useState<StateResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        console.log(
+          '[gov-shutdown-ext][popup] Mounted, querying active tab and storage...'
+        );
+        const tabs = await browser.tabs.query({
+          active: true,
+          currentWindow: true,
+        });
+        const tabId = tabs[0]?.id;
+        console.log(
+          '[gov-shutdown-ext][popup] tabs result:',
+          tabs,
+          'selected tabId:',
+          tabId
+        );
+
+        // Read global enabled from local storage
+        const { enabled = true } = await browser.storage.local.get({
+          enabled: true,
+        });
+
+        // Read per-tab removal flag from session storage
+        let removedForTab = false;
+        if (tabId !== undefined) {
+          const key = `removed:${tabId}`;
+          const session =
+            (browser.storage as any).session ?? browser.storage.local;
+          const result = await session.get(key);
+          removedForTab = Boolean(result[key]);
+
+          // One-shot retry in case write just happened
+          if (!removedForTab) {
+            await new Promise((r) => setTimeout(r, 75));
+            const retry = await session.get(key);
+            removedForTab = Boolean(retry[key]);
+          }
+        }
+
+        const computed: StateResponse = { enabled, removedForTab };
+        console.log(
+          '[gov-shutdown-ext][popup] Computed state from storage:',
+          computed
+        );
+        if (isMounted) setState(computed);
+      } catch (err) {
+        console.error('[gov-shutdown-ext][popup] Error during init:', err);
+        if (isMounted) setState({ enabled: true, removedForTab: false });
+      } finally {
+        console.log(
+          '[gov-shutdown-ext][popup] Init complete, clearing loading'
+        );
+        if (isMounted) setLoading(false);
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleToggle = async () => {
+    if (!state) return;
+
+    const newEnabled = !state.enabled;
+    console.log('[gov-shutdown-ext][popup] Toggling enabled to:', newEnabled);
+    setState({ ...state, enabled: newEnabled });
+
+    await browser.runtime.sendMessage({
+      type: 'SET_ENABLED',
+      enabled: newEnabled,
+    });
+    console.log('[gov-shutdown-ext][popup] Toggle message sent');
+  };
+
+  if (loading || !state) {
+    return <div className="popup">Loading...</div>;
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://wxt.dev" target="_blank">
-          <img src={wxtLogo} className="logo" alt="WXT logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="popup">
+      <div className="header">
+        <h2>Government Shutdown Banner Blocker</h2>
       </div>
-      <h1>WXT + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+
+      <div className={`status ${state.removedForTab ? 'removed' : 'clean'}`}>
+        {state.removedForTab
+          ? '🚫 Removed fascist banner'
+          : '👍 No fascist banners here!'}
       </div>
-      <p className="read-the-docs">
-        Click on the WXT and React logos to learn more
-      </p>
-    </>
+
+      <div className="toggle-container">
+        <label className="toggle-label">
+          <input
+            type="checkbox"
+            checked={state.enabled}
+            onChange={handleToggle}
+            className="toggle-input"
+          />
+          <span className="toggle-text">
+            {state.enabled ? 'Enabled' : 'Disabled'}
+          </span>
+        </label>
+      </div>
+    </div>
   );
 }
 

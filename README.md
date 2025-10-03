@@ -1,3 +1,152 @@
-# WXT + React
+### Government Website Partisan Banner Remover (gov-shutdown-ext)
 
-This template should help get you started developing with React in WXT.
+During the October 2025 federal government shutdown, multiple official .gov sites displayed banners blaming a specific political party, using phrasing like “The Radical Left in Congress shut down the government.” Examples were observed on HUD and USDA pages, and other agencies carried similarly partisan messaging. Ethics groups and reporters flagged these as contrary to the nonpartisan norms of government communications and potentially running afoul of the Hatch Act’s limits on partisan activity in official capacity.
+
+References: [ABC7 Chicago](https://abc7chicago.com/post/government-websites-displaying-messages-blaming-democrats-shutdown/17918723/?utm_source=openai), [CBS News](https://www.cbsnews.com/news/government-website-hud-blames-shutdown-on-radical-left-ethics-group-calls-it-blatant-violation-hatch-act/?intcid=CNI-00-10aaa3a&utm_source=openai), [OPB](https://www.opb.org/article/2025/10/01/federal-agencies-told-to-blame-democrats-shutdown/?utm_source=openai).
+
+This project removes those partisan banners from government websites in your own browser. It’s an independent, open-source tool intended to keep taxpayer-funded websites neutral while you browse.
+
+Note: Some sample markup from affected sites (for testing and selector work) is included in `gov-site-elements/` (e.g., `cdc.gov-banner.html`, `fs.usda.gov-banner.html`, `home.treasury.gov-banner.html`, `hud.gov-alert.html`, `hud.gov-modal.html`, `state.gov-banner.html`).
+
+### What it does
+
+- **Automatic removal**: Detects and removes known partisan banners on targeted government websites.
+- **Visual feedback in the popup**:
+  - Green: “No fascists banners here! 👍” when nothing was removed on the current tab.
+  - Red: “Removed fascists banner 🚫” when a banner was removed in the current tab.
+- **Enable/disable toggle**: Quickly turn the extension’s behavior on or off without uninstalling.
+- **Private by design**: No data is sent anywhere; detection/removal happens locally in your browser.
+
+### How it works (high level)
+
+- **Content scripts (site-specific)**: For each targeted domain, a content script runs at `document_idle`, searches for narrowly scoped selectors (and limited fallbacks), removes matched banner nodes, and reports a single “removed” event.
+- **Resilience**: A `MutationObserver` re-checks after dynamic inserts. For future changes, selectors can be extended with careful, guarded fallbacks.
+- **Background state**: Tracks whether a banner was removed for the active tab (ephemeral per-tab flag) and persists a global `enabled` flag in extension storage.
+- **Popup UI**: Queries the background for current tab state and the global `enabled` flag; renders a green or red status and a toggle. Toggling updates storage and broadcasts an `enabled` change to content scripts.
+
+### Installation (local development)
+
+Prereqs: Node.js (LTS recommended), a Chromium-based browser and/or Firefox.
+
+1. Install dependencies
+
+```bash
+npm install
+```
+
+2. Run in development mode (Chromium)
+
+```bash
+npm run dev
+```
+
+Follow the terminal instructions from the WXT dev runner to load the temporary extension. Hot reload is supported in development.
+
+3. Build a production bundle
+
+```bash
+npm run build
+```
+
+Then load the built extension folder for your browser:
+
+- Chrome/Edge: `chrome://extensions` → Enable Developer mode → “Load unpacked” → select the `dist/chrome/` directory.
+- Firefox: use `npm run build:firefox` and load the result via `about:debugging#/runtime/this-firefox` → “Load Temporary Add-on…”.
+
+### Install from Releases
+
+If you just want to use the extension without building locally:
+
+- **Chromium (Chrome/Edge)**
+
+  - Download the latest `gov-shutdown-ext-chromium-vX.Y.Z.zip` from the [Releases](https://github.com/taylorjdawson/gov-shutdown-ext/releases) page.
+  - Unzip it.
+  - Open `chrome://extensions` (or `edge://extensions`).
+  - Enable Developer mode.
+  - Click “Load unpacked” and select the unzipped folder (contains `manifest.json`).
+
+- **Firefox**
+  - Download the latest `gov-shutdown-ext-firefox-vX.Y.Z.zip` from the [Releases](https://github.com/taylorjdawson/gov-shutdown-ext/releases) page.
+  - Unzip it.
+  - Open `about:debugging#/runtime/this-firefox`.
+  - Click “Load Temporary Add-on…” and choose the `manifest.json` inside the unzipped folder.
+  - Note: Unsigned add-ons are temporary. For a persistent install, Firefox requires signing.
+
+### Usage
+
+1. Visit a targeted government website.
+2. If a known partisan banner is present, it will be removed automatically.
+3. Click the extension icon to open the popup:
+   - Green status: “No fascists banners here! 👍”
+   - Red status: “Removed fascists banner 🚫”
+4. Use the toggle to enable/disable removal globally at any time.
+
+### Supported sites (initial)
+
+- `cdc.gov`
+- `fs.usda.gov`
+- `state.gov`
+- `home.treasury.gov`
+- `hud.gov`
+
+Support can be expanded by adding site-specific selectors and guarded fallbacks.
+
+### Sites with banners blocked by this extension
+
+If a site is missing, please open an issue and we'll add it.
+
+| Site name                                                      | URL                                                        |
+| -------------------------------------------------------------- | ---------------------------------------------------------- |
+| White House                                                    | [https://www.whitehouse.gov](https://www.whitehouse.gov)   |
+| U.S. Department of the Treasury                                | [https://home.treasury.gov](https://home.treasury.gov)     |
+| U.S. Department of Justice (DOJ)                               | [https://www.justice.gov](https://www.justice.gov)         |
+| Drug Enforcement Administration (DEA)                          | [https://www.dea.gov](https://www.dea.gov)                 |
+| COPS Office (DOJ)                                              | [https://cops.usdoj.gov](https://cops.usdoj.gov)           |
+| DOJ Office of Public Affairs                                   | [https://www.justice.gov/opa](https://www.justice.gov/opa) |
+| Office of the Attorney General (DOJ)                           | [https://www.justice.gov/ag](https://www.justice.gov/ag)   |
+| U.S. Department of State                                       | [https://www.state.gov](https://www.state.gov)             |
+| U.S. Department of Health & Human Services (HHS)               | [https://www.hhs.gov](https://www.hhs.gov)                 |
+| Office of Disease Prevention and Health Promotion (Health.gov) | [https://health.gov](https://health.gov)                   |
+| U.S. Food & Drug Administration (FDA)                          | [https://www.fda.gov](https://www.fda.gov)                 |
+| U.S. Department of Agriculture (USDA)                          | [https://www.usda.gov](https://www.usda.gov)               |
+| U.S. Forest Service (USDA)                                     | [https://www.fs.usda.gov](https://www.fs.usda.gov)         |
+| Animal and Plant Health Inspection Service (APHIS)             | [https://www.aphis.usda.gov](https://www.aphis.usda.gov)   |
+| Food Safety and Inspection Service (FSIS)                      | [https://www.fsis.usda.gov](https://www.fsis.usda.gov)     |
+| U.S. Small Business Administration (SBA)                       | [https://www.sba.gov](https://www.sba.gov)                 |
+| U.S. Department of Housing and Urban Development (HUD)         | [https://www.hud.gov](https://www.hud.gov)                 |
+
+### Contributing
+
+Issues and PRs are welcome. If you find a partisan banner that isn’t removed, please open an issue with:
+
+- The page URL
+- A screenshot
+- The relevant HTML snippet (if possible)
+
+### License
+
+MIT. This project is not affiliated with any government agency and does not provide legal advice.
+
+### Maintainers: Release via GitHub Actions
+
+The repository includes an automated release workflow that builds and attaches ready-to-install zip files for Chromium and Firefox.
+
+1. Ensure `main` is green and typechecks pass.
+2. Bump version and create a tag (this sets the version for the release):
+
+   ```bash
+   npm version patch   # or minor/major
+   git push --follow-tags
+   ```
+
+   Alternatively, create a `vX.Y.Z` tag in GitHub. The workflow triggers on tags matching `v*`.
+
+3. The workflow will:
+
+   - Install deps, typecheck, build for Chromium and Firefox
+   - Zip `dist/chrome` and `dist/firefox` into:
+     - `gov-shutdown-ext-chromium-vX.Y.Z.zip`
+     - `gov-shutdown-ext-firefox-vX.Y.Z.zip`
+   - Create a GitHub Release for the tag and attach both zips
+
+4. Verify the assets on the [Releases](https://github.com/taylorjdawson/gov-shutdown-ext/releases) page.

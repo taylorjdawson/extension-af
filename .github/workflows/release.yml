@@ -1,0 +1,84 @@
+name: Release Build and Attach Artifacts
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-zip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run compile
+
+      - name: Build (Chromium)
+        run: npm run build
+
+      - name: Build (Firefox)
+        run: npm run build:firefox
+
+      - name: Determine version
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          if [ -z "$VERSION" ]; then
+            VERSION="v$(node -p "require('./package.json').version")"
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Zip build outputs
+        shell: bash
+        run: |
+          mkdir -p release-ready
+          if [ -d dist/chrome ]; then
+            (cd dist/chrome && zip -r ../../release-ready/gov-shutdown-ext-chromium-${VERSION}.zip .)
+          fi
+          if [ -d dist/firefox ]; then
+            (cd dist/firefox && zip -r ../../release-ready/gov-shutdown-ext-firefox-${VERSION}.zip .)
+          fi
+          ls -lah release-ready
+
+      - name: Upload zip artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-zips
+          path: release-ready/*.zip
+          if-no-files-found: error
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build-and-zip
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-zips
+          path: release-assets
+
+      - name: Create GitHub Release and attach zips
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release-assets/**/*.zip
+          draft: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
