@@ -4,12 +4,22 @@ export default defineContentScript({
   matches: ['*://*.usda.gov/*', '*://fs.usda.gov/*'],
   runAt: 'document_idle',
   main(ctx) {
-    // Primary selectors for USDA/Forest Service banner removal
+    // Primary selectors for USDA (main, FS) and APHIS banner removal
     const selectors = [
-      '#block-fshqalertmessage',  // Specific block ID from sample
-      '.alert-banner:has(.usa-alert--warning)',  // Alert banner with warning
-      '.usa-alert--warning:has(span[data-teams])',  // Warning with teams span
-      '.usa-alert--warning'  // Fallback: check text content
+      // Forest Service
+      '#block-fshqalertmessage',
+      '.alert-banner:has(.usa-alert--warning)',
+      '.usa-alert--warning:has(span[data-teams])',
+      // USDA main site
+      '#block-usda-uswds-homepagealert',
+      '.usa-site-alert--emergency',
+      '.usa-alert--emergency',
+      // APHIS
+      '.usa-alert__container--info .usa-alert--info',
+      '.usa-alert--slim.usa-alert--info',
+      '.usa-alert--info',
+      // Generic fallback
+      '.usa-alert',
     ];
 
     let isEnabled = true;
@@ -31,11 +41,21 @@ export default defineContentScript({
       for (const selector of selectors) {
         try {
           const elements = document.querySelectorAll(selector);
-          elements.forEach(el => {
-            // For generic warnings, check if it contains shutdown text
-            if (selector === '.usa-alert--warning') {
+          elements.forEach((el) => {
+            const isGeneric = [
+              '.usa-alert--warning',
+              '.usa-alert--emergency',
+              '.usa-site-alert--emergency',
+              '.usa-alert--info',
+              '.usa-alert',
+            ].includes(selector);
+            if (isGeneric) {
               const text = el.textContent?.toLowerCase() || '';
-              if (text.includes('shutdown') || text.includes('funding lapse')) {
+              if (
+                text.includes('shutdown') ||
+                text.includes('shut down') ||
+                text.includes('funding lapse')
+              ) {
                 el.remove();
                 removed = true;
               }
@@ -48,16 +68,19 @@ export default defineContentScript({
           // Fallback for browsers without :has() support
           if (selector.includes(':has')) {
             if (selector.includes('.alert-banner')) {
-              const fallbackElements = document.querySelectorAll('.alert-banner');
-              fallbackElements.forEach(el => {
+              const fallbackElements =
+                document.querySelectorAll('.alert-banner');
+              fallbackElements.forEach((el) => {
                 if (el.querySelector('.usa-alert--warning')) {
                   el.remove();
                   removed = true;
                 }
               });
             } else if (selector.includes('.usa-alert--warning')) {
-              const fallbackElements = document.querySelectorAll('.usa-alert--warning');
-              fallbackElements.forEach(el => {
+              const fallbackElements = document.querySelectorAll(
+                '.usa-alert--warning'
+              );
+              fallbackElements.forEach((el) => {
                 if (el.querySelector('span[data-teams]')) {
                   el.remove();
                   removed = true;
@@ -92,7 +115,7 @@ export default defineContentScript({
       if (document.body) {
         observer.observe(document.body, {
           childList: true,
-          subtree: true
+          subtree: true,
         });
       }
     }
@@ -119,7 +142,7 @@ export default defineContentScript({
     });
 
     // Initialize
-    checkEnabled().then(enabled => {
+    checkEnabled().then((enabled) => {
       if (enabled) {
         removeBanners();
         startObserver();
@@ -130,5 +153,5 @@ export default defineContentScript({
     ctx.onInvalidated(() => {
       stopObserver();
     });
-  }
+  },
 });
