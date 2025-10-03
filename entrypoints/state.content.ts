@@ -6,10 +6,10 @@ export default defineContentScript({
   main(ctx) {
     // Primary selectors for State.gov banner removal
     const selectors = [
-      '#emergency_banner',  // Specific ID from sample
-      '.module--header-alert',  // Module class for header alerts
-      '.header-alert[data-component="headeralert"]',  // Header alert with component
-      '.header-alert:has(.header-alert__title)'  // Header alert containing title
+      '#emergency_banner', // Specific ID from sample
+      '.module--header-alert', // Module class for header alerts
+      '.header-alert[data-component="headeralert"]', // Header alert with component
+      '.header-alert:has(.header-alert__title)', // Header alert containing title
     ];
 
     let isEnabled = true;
@@ -31,11 +31,14 @@ export default defineContentScript({
       for (const selector of selectors) {
         try {
           const elements = document.querySelectorAll(selector);
-          elements.forEach(el => {
+          elements.forEach((el) => {
             // For header alerts, verify it contains shutdown-related text
             if (selector.includes('.header-alert')) {
               const text = el.textContent?.toLowerCase() || '';
-              if (text.includes('shutdown') || text.includes('federal government')) {
+              if (
+                text.includes('shutdown') ||
+                text.includes('federal government')
+              ) {
                 el.remove();
                 removed = true;
               }
@@ -48,7 +51,7 @@ export default defineContentScript({
           // Fallback for browsers without :has() support
           if (selector.includes(':has')) {
             const fallbackElements = document.querySelectorAll('.header-alert');
-            fallbackElements.forEach(el => {
+            fallbackElements.forEach((el) => {
               if (el.querySelector('.header-alert__title')) {
                 const text = el.textContent?.toLowerCase() || '';
                 if (text.includes('shutdown')) {
@@ -64,7 +67,6 @@ export default defineContentScript({
       if (removed && !bannerWasRemoved) {
         bannerWasRemoved = true;
         browser.runtime.sendMessage({ type: 'BANNER_REMOVED' } as Message);
-        console.log('[gov-shutdown-ext] Removed State.gov shutdown banner');
       }
     }
 
@@ -85,7 +87,7 @@ export default defineContentScript({
       if (document.body) {
         observer.observe(document.body, {
           childList: true,
-          subtree: true
+          subtree: true,
         });
       }
     }
@@ -112,7 +114,7 @@ export default defineContentScript({
     });
 
     // Initialize
-    checkEnabled().then(enabled => {
+    checkEnabled().then((enabled) => {
       if (enabled) {
         removeBanners();
         startObserver();
@@ -123,5 +125,5 @@ export default defineContentScript({
     ctx.onInvalidated(() => {
       stopObserver();
     });
-  }
+  },
 });

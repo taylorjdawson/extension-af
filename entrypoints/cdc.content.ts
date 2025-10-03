@@ -6,8 +6,8 @@ export default defineContentScript({
   main(ctx) {
     // Primary selectors for CDC banner removal
     const selectors = [
-      '.cdc-gs202510-banner',  // Current exact class from sample
-      '[class^="cdc-gs"][class$="-banner"]'  // Future-proof for date-like class variants
+      '.cdc-gs202510-banner', // Current exact class from sample
+      '[class^="cdc-gs"][class$="-banner"]', // Future-proof for date-like class variants
     ];
 
     let isEnabled = true;
@@ -28,7 +28,7 @@ export default defineContentScript({
       let removed = false;
       for (const selector of selectors) {
         const elements = document.querySelectorAll(selector);
-        elements.forEach(el => {
+        elements.forEach((el) => {
           el.remove();
           removed = true;
         });
@@ -37,7 +37,6 @@ export default defineContentScript({
       if (removed && !bannerWasRemoved) {
         bannerWasRemoved = true;
         browser.runtime.sendMessage({ type: 'BANNER_REMOVED' } as Message);
-        console.log('[gov-shutdown-ext] Removed CDC shutdown banner');
       }
     }
 
@@ -58,7 +57,7 @@ export default defineContentScript({
       if (document.body) {
         observer.observe(document.body, {
           childList: true,
-          subtree: true
+          subtree: true,
         });
       }
     }
@@ -85,7 +84,7 @@ export default defineContentScript({
     });
 
     // Initialize
-    checkEnabled().then(enabled => {
+    checkEnabled().then((enabled) => {
       if (enabled) {
         removeBanners();
         startObserver();
@@ -96,5 +95,5 @@ export default defineContentScript({
     ctx.onInvalidated(() => {
       stopObserver();
     });
-  }
+  },
 });

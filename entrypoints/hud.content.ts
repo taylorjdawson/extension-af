@@ -6,11 +6,11 @@ export default defineContentScript({
   main(ctx) {
     // Primary selectors for HUD banner and modal removal
     const selectors = [
-      '.header-alert.whitebackboxplain',  // Alert banner from sample
-      '.header-alert:has(.headeronei)',  // Header alert containing specific class
-      '#openModal.modalDialog',  // Modal dialog with shutdown message
-      '.modalDialog:has(.headerone)',  // Modal containing headerone class
-      '.header-alert'  // Fallback: any header alert (check text content)
+      '.header-alert.whitebackboxplain', // Alert banner from sample
+      '.header-alert:has(.headeronei)', // Header alert containing specific class
+      '#openModal.modalDialog', // Modal dialog with shutdown message
+      '.modalDialog:has(.headerone)', // Modal containing headerone class
+      '.header-alert', // Fallback: any header alert (check text content)
     ];
 
     let isEnabled = true;
@@ -32,7 +32,7 @@ export default defineContentScript({
       for (const selector of selectors) {
         try {
           const elements = document.querySelectorAll(selector);
-          elements.forEach(el => {
+          elements.forEach((el) => {
             // For generic .header-alert, check if it contains shutdown text
             if (selector === '.header-alert') {
               const text = el.textContent?.toLowerCase() || '';
@@ -49,16 +49,18 @@ export default defineContentScript({
           // Fallback for browsers without :has() support
           if (selector.includes(':has')) {
             if (selector.includes('.header-alert')) {
-              const fallbackElements = document.querySelectorAll('.header-alert');
-              fallbackElements.forEach(el => {
+              const fallbackElements =
+                document.querySelectorAll('.header-alert');
+              fallbackElements.forEach((el) => {
                 if (el.querySelector('.headeronei')) {
                   el.remove();
                   removed = true;
                 }
               });
             } else if (selector.includes('.modalDialog')) {
-              const fallbackElements = document.querySelectorAll('.modalDialog');
-              fallbackElements.forEach(el => {
+              const fallbackElements =
+                document.querySelectorAll('.modalDialog');
+              fallbackElements.forEach((el) => {
                 if (el.querySelector('.headerone')) {
                   el.remove();
                   removed = true;
@@ -72,7 +74,6 @@ export default defineContentScript({
       if (removed && !bannerWasRemoved) {
         bannerWasRemoved = true;
         browser.runtime.sendMessage({ type: 'BANNER_REMOVED' } as Message);
-        console.log('[gov-shutdown-ext] Removed HUD shutdown banner');
       }
     }
 
@@ -93,7 +94,7 @@ export default defineContentScript({
       if (document.body) {
         observer.observe(document.body, {
           childList: true,
-          subtree: true
+          subtree: true,
         });
       }
     }
@@ -120,7 +121,7 @@ export default defineContentScript({
     });
 
     // Initialize
-    checkEnabled().then(enabled => {
+    checkEnabled().then((enabled) => {
       if (enabled) {
         removeBanners();
         startObserver();
@@ -131,5 +132,5 @@ export default defineContentScript({
     ctx.onInvalidated(() => {
       stopObserver();
     });
-  }
+  },
 });

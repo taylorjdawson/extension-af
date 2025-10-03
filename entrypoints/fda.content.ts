@@ -42,7 +42,6 @@ export default defineContentScript({
       if (removed && !bannerWasRemoved) {
         bannerWasRemoved = true;
         browser.runtime.sendMessage({ type: 'BANNER_REMOVED' } as Message);
-        console.log('[gov-shutdown-ext] Removed FDA shutdown banner');
       }
     }
 

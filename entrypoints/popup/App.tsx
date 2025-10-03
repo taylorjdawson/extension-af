@@ -10,20 +10,11 @@ function App() {
     let isMounted = true;
     (async () => {
       try {
-        console.log(
-          '[gov-shutdown-ext][popup] Mounted, querying active tab and storage...'
-        );
         const tabs = await browser.tabs.query({
           active: true,
           currentWindow: true,
         });
         const tabId = tabs[0]?.id;
-        console.log(
-          '[gov-shutdown-ext][popup] tabs result:',
-          tabs,
-          'selected tabId:',
-          tabId
-        );
 
         // Read global enabled from local storage
         const { enabled = true } = await browser.storage.local.get({
@@ -48,18 +39,11 @@ function App() {
         }
 
         const computed: StateResponse = { enabled, removedForTab };
-        console.log(
-          '[gov-shutdown-ext][popup] Computed state from storage:',
-          computed
-        );
         if (isMounted) setState(computed);
       } catch (err) {
-        console.error('[gov-shutdown-ext][popup] Error during init:', err);
+        console.error('[extension-af][popup] Error during init:', err);
         if (isMounted) setState({ enabled: true, removedForTab: false });
       } finally {
-        console.log(
-          '[gov-shutdown-ext][popup] Init complete, clearing loading'
-        );
         if (isMounted) setLoading(false);
       }
     })();
@@ -72,14 +56,12 @@ function App() {
     if (!state) return;
 
     const newEnabled = !state.enabled;
-    console.log('[gov-shutdown-ext][popup] Toggling enabled to:', newEnabled);
     setState({ ...state, enabled: newEnabled });
 
     await browser.runtime.sendMessage({
       type: 'SET_ENABLED',
       enabled: newEnabled,
     });
-    console.log('[gov-shutdown-ext][popup] Toggle message sent');
   };
 
   if (loading || !state) {
