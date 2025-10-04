@@ -75,14 +75,24 @@ If you just want to use the extension without building locally:
 
 - **Chromium (Chrome/Edge)**
 
-  - Download the latest `extension-af-chromium-vX.Y.Z.zip` from the [Releases](https://github.com/taylorjdawson/extension-af/releases) page.
+  - Download the latest `extension-af-chromium.zip` (stable link: [Latest Chromium zip](https://github.com/taylorjdawson/extension-af/releases/latest/download/extension-af-chromium.zip)).
   - Unzip it.
-  - Open `chrome://extensions` (or `edge://extensions`).
-  - Enable Developer mode.
-  - Click “Load unpacked” and select the unzipped folder (contains `manifest.json`).
+  - Open `chrome://extensions` (or `edge://extensions`). Tip: you can copy/paste:
+
+    ```bash
+    # macOS
+    open -a "Google Chrome" chrome://extensions || open -a "Microsoft Edge" edge://extensions
+    # Windows
+    start chrome chrome://extensions || start msedge edge://extensions
+    ```
+
+  - Enable Developer mode. Easiest: drag the unzipped folder onto the extensions page. Or click “Load unpacked” and select the folder. You can also run the helper inside the folder:
+
+    - macOS: double‑click `Open-Extensions-Page.command`
+    - Windows: right‑click `Open-Extensions-Page.ps1` → Run with PowerShell
 
 - **Firefox**
-  - Download the latest `extension-af-firefox-vX.Y.Z.zip` from the [Releases](https://github.com/taylorjdawson/extension-af/releases) page.
+  - Download the latest `extension-af-firefox.zip` (stable link: [Latest Firefox zip](https://github.com/taylorjdawson/extension-af/releases/latest/download/extension-af-firefox.zip)).
   - Unzip it.
   - Open `about:debugging#/runtime/this-firefox`.
   - Click “Load Temporary Add-on…” and choose the `manifest.json` inside the unzipped folder.
@@ -157,9 +167,9 @@ The repository includes an automated release workflow that builds and attaches r
 3. The workflow will:
 
    - Install deps, typecheck, build for Chromium and Firefox
-   - Zip `dist/chrome` and `dist/firefox` into:
-     - `extension-af-chromium-vX.Y.Z.zip`
-     - `extension-af-firefox-vX.Y.Z.zip`
-   - Create a GitHub Release for the tag and attach both zips
+   - Package `.output/*` into:
+     - `extension-af-chromium-vX.Y.Z.zip` and `extension-af-chromium.zip`
+     - `extension-af-firefox-vX.Y.Z.zip` and `extension-af-firefox.zip`
+   - Create or update the GitHub Release for the tag and attach the zips
 
 4. Verify the assets on the [Releases](https://github.com/taylorjdawson/extension-af/releases) page.

@@ -47,22 +47,83 @@ jobs:
           fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-      - name: Zip build outputs
+      - name: Zip build outputs (with helper scripts)
         shell: bash
         run: |
-          mkdir -p release-ready
+          set -euo pipefail
+          mkdir -p release-ready package/chromium package/firefox
+
           CHROME_DIR=".output/chrome-mv3"
           FIREFOX_DIR=".output/firefox-mv2"
+
           if [ -d "$CHROME_DIR" ]; then
-            (cd "$CHROME_DIR" && zip -r ../../release-ready/extension-af-chromium-${VERSION}.zip .)
+            rsync -a "$CHROME_DIR"/ package/chromium/
           else
             echo "Expected Chrome build dir not found: $CHROME_DIR" >&2
           fi
+
           if [ -d "$FIREFOX_DIR" ]; then
-            (cd "$FIREFOX_DIR" && zip -r ../../release-ready/extension-af-firefox-${VERSION}.zip .)
+            rsync -a "$FIREFOX_DIR"/ package/firefox/
           else
             echo "Expected Firefox build dir not found: $FIREFOX_DIR" >&2
           fi
+
+          # Add helper scripts and quick README to both packages (no heredocs to keep YAML linters happy)
+          for TARGET in chromium firefox; do
+            PKG_DIR="package/${TARGET}"
+            [ -d "$PKG_DIR" ] || continue
+
+            printf '%s\n' \
+              'Quick install' \
+              '' \
+              'Chromium (Chrome/Edge)' \
+              '1) Open chrome://extensions (or edge://extensions)' \
+              '2) Enable Developer mode' \
+              '3) Drag this folder onto the page OR click "Load unpacked" and select this folder' \
+              '' \
+              'Firefox (temporary load)' \
+              '1) Open about:debugging#/runtime/this-firefox' \
+              '2) Click "Load Temporary Add-on…" and pick manifest.json in this folder' \
+              '' \
+              'Helper commands' \
+              'macOS Chrome:   open -a "Google Chrome" chrome://extensions' \
+              'macOS Edge:     open -a "Microsoft Edge" edge://extensions' \
+              'Windows Chrome: start chrome chrome://extensions' \
+              'Windows Edge:   start msedge edge://extensions' \
+              '' \
+              'Notes' \
+              '- Chromium requires Developer mode for unpacked extensions' \
+              '- Firefox temporary loads disappear on restart unless signed' \
+              > "$PKG_DIR/INSTALL-README.txt"
+
+            printf '%s\n' \
+              '#!/bin/bash' \
+              'open -a "Google Chrome" chrome://extensions || true' \
+              'open -a "Microsoft Edge" edge://extensions || true' \
+              'open "$(pwd)" || true' \
+              'echo "Enable Developer mode, then drag this folder or click '\''Load unpacked'\''."' \
+              'read -r -p "Press Enter to exit..." _' \
+              > "$PKG_DIR/Open-Extensions-Page.command"
+            chmod +x "$PKG_DIR/Open-Extensions-Page.command" || true
+
+            printf '%s\n' \
+              'Start-Process chrome "chrome://extensions" -ErrorAction SilentlyContinue' \
+              'Start-Process msedge "edge://extensions" -ErrorAction SilentlyContinue' \
+              'Start-Process explorer "." -ErrorAction SilentlyContinue' \
+              'Write-Host "Enable Developer mode, then drag this folder or click ''Load unpacked''."' \
+              > "$PKG_DIR/Open-Extensions-Page.ps1"
+          done
+
+          # Create versioned and stable zips
+          if [ -d package/chromium ]; then
+            (cd package/chromium && zip -r ../../release-ready/extension-af-chromium-${VERSION}.zip .)
+            (cd package/chromium && zip -r ../../release-ready/extension-af-chromium.zip .)
+          fi
+          if [ -d package/firefox ]; then
+            (cd package/firefox && zip -r ../../release-ready/extension-af-firefox-${VERSION}.zip .)
+            (cd package/firefox && zip -r ../../release-ready/extension-af-firefox.zip .)
+          fi
+
           ls -lah release-ready
 
       - name: Upload zip artifacts
@@ -91,5 +152,6 @@ jobs:
           generate_release_notes: true
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
+          overwrite_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
