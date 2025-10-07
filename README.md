@@ -1,4 +1,22 @@
-### Government Website Partisan Banner Remover (extension-af)
+# Extension AF - Government Website Partisan Banner Remover
+
+- **What it is**: A privacy-preserving browser extension that keeps official `.gov` sites nonpartisan while you browse.
+- **What it does**: Automatically detects and removes shutdown-related partisan banners from targeted government websites locally in your browser.
+- **Privacy**: No tracking or data collection; removal happens entirely client-side.
+- **Browsers**: Chromium-based (Chrome/Edge) and Firefox.
+- **Try it**: See [Install from Releases](#install-from-releases) and [Usage](#usage).
+
+### Example
+
+#### Before:
+
+![Before: banner visible (without extension enabled)](public/state-gov-before.png)
+
+#### After:
+
+![After: banner removed (with extension enabled)](public/state-gov-after.png)
+
+### Background and context
 
 During the October 2025 federal government shutdown, multiple official .gov sites displayed banners blaming a specific political party, using phrasing like “The Radical Left in Congress shut down the government.” Examples were observed on HUD and USDA pages, and other agencies carried similarly partisan messaging. Ethics groups and reporters flagged these as contrary to the nonpartisan norms of government communications and potentially running afoul of the Hatch Act’s limits on partisan activity in official capacity.
 
